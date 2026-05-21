@@ -211,18 +211,18 @@ public:
     }
 
     void start_heartbeat(int interval_seconds=30){
-        struct HBData{std::string url,app_name,app_secret,*p_username;int ms;};
-        auto* d=new HBData{url,name,secret,&user_data.username,interval_seconds*1000};
+        struct HBData{std::string url,app_name,app_secret,*p_username,hwid;int ms;};
+        auto* d=new HBData{url,name,secret,&user_data.username,get_hwid(),interval_seconds*1000};
         CreateThread(nullptr,0,[](LPVOID param)->DWORD{
             auto* d=reinterpret_cast<HBData*>(param);
             while(true){
                 Sleep(d->ms);
                 if(d->p_username->empty())continue;
-                std::string body=jobj({{"app_name",d->app_name},{"app_secret",d->app_secret},{"username",*d->p_username},{"hwid",get_hwid()}});
+                std::string body=jobj({{"app_name",d->app_name},{"app_secret",d->app_secret},{"username",*d->p_username},{"hwid",d->hwid}});
                 std::string resp=http_post(d->url+"/api/1.3/heartbeat",body);
                 if(!json_bool(resp,"success")&&!json_str(resp,"reason").empty()){
                     std::string msg=json_str(resp,"message");
-                    MessageBoxA(nullptr,msg.c_str(),"Session Ended",MB_OK|MB_ICONWARNING);
+                    MessageBoxA(nullptr,msg.c_str(),"Session Ended",MB_OK|MB_ICONWARNING|MB_TOPMOST|MB_SETFOREGROUND);
                     ExitProcess(1);
                 }
             }

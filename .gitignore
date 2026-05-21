@@ -1,0 +1,16 @@
+**/.vs/
+**/.vs/**
+**/x64/
+**/Debug/
+**/Release/
+*.exe
+*.obj
+*.pch
+*.pdb
+*.idb
+*.ipch
+*.tlog
+*.suo
+*.db
+*.log
+*.vsidx

@@ -127,7 +127,7 @@ static bool json_bool(const std::string& json, const std::string& key) {
 
 // ── Data classes ──────────────────────────────────────────────────────────────
 class userdata{public:std::string username,ip,hwid,expiry,level,license_key,createdate,lastlogin;};
-class appdata {public:std::string version,status,numUsers,downloadLink,updateVersion;};
+class appdata { public:std::string version, status, numUsers, downloadLink, webloaderLink, hash, updateVersion; };
 class responsedata{
 public:
     bool success=false,needs_registration=false,username_taken=false;

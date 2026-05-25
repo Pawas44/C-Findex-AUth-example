@@ -4,8 +4,8 @@
 #include <string>
 
 const std::string APP_NAME = "Findex Internal";
-const std::string OWNER_ID = "Your-Owner-ID";
-const std::string APP_SECRET = "5715b39369d3a6a763992813c037bf335a368f94f9d82287be12389f4d0ba4de";
+const std::string OWNER_ID = "5DKDEUCWAVXKB9H";
+const std::string APP_SECRET = "5b1456b26572b3100c643392181892ad070d10228cc1f7fd5a690bd6f49fd152";
 const std::string APP_VER = "1.0";
 const std::string SERVER_URL = "https://findexauth.online";
 

@@ -134,6 +134,17 @@ public:
     std::string message,validated_key;
 };
 
+class protection_settings {
+public:
+    bool anti_debug = false;
+    bool process_shield = false;
+    bool anti_emulation = false;
+    bool suspicious_windows = false;
+    bool integrity_check = false;
+    bool heuristic_integrity = false;
+    bool heartbeat_security = false;
+};
+
 // ── Main API class ─────────────────────────────────────────────────────────────
 class api {
 public:
@@ -142,6 +153,7 @@ public:
     userdata    user_data;
     appdata     app_data;
     responsedata response;
+    protection_settings protection;
 
     api(std::string name,std::string ownerid,std::string secret,
         std::string version,std::string url)
@@ -164,6 +176,7 @@ public:
             response.message="Update available! v"+app_data.updateVersion+" Download: "+
                 (app_data.downloadLink.empty()?url+"/update":app_data.downloadLink);
         }
+        _parse_protection(resp);
     }
 
     void license(const std::string& key){
@@ -289,6 +302,25 @@ private:
         user_data.license_key=extract("license_key");
         user_data.lastlogin  =extract("last_login");
         user_data.createdate =extract("created_at");
+        _parse_protection(resp);
+    }
+
+    void _parse_protection(const std::string& resp){
+        auto ps = resp.find("\"protection_settings\"");
+        if (ps == std::string::npos) return;
+        auto ob = resp.find('{', ps);
+        if (ob == std::string::npos) return;
+        auto cb = resp.find('}', ob);
+        if (cb == std::string::npos) return;
+        std::string sub = resp.substr(ob, cb - ob + 1);
+
+        protection.anti_debug = json_bool(sub, "anti_debug");
+        protection.process_shield = json_bool(sub, "process_shield");
+        protection.anti_emulation = json_bool(sub, "anti_emulation");
+        protection.suspicious_windows = json_bool(sub, "suspicious_windows");
+        protection.integrity_check = json_bool(sub, "integrity_check");
+        protection.heuristic_integrity = json_bool(sub, "heuristic_integrity");
+        protection.heartbeat_security = json_bool(sub, "heartbeat_security");
     }
 };
 

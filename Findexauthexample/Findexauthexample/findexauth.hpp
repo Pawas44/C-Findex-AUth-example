@@ -241,6 +241,32 @@ public:
         http_post(url+"/api/1.3/log",body);
     }
 
+    void webhook(const std::string& webid, const std::string& params=""){
+        std::string body=jobj({{"app_name",name},{"app_secret",secret},{"webid",webid},{"params",params}});
+        std::string resp=http_post(url+"/api/1.3/webhook",body);
+        response.success=json_bool(resp,"success");
+        response.message=json_str(resp,"message");
+    }
+
+    std::vector<unsigned char> download_file(const std::string& fileid){
+        std::string body=jobj({{"app_name",name},{"app_secret",secret},{"fileid",fileid}});
+        std::string resp=http_post(url+"/api/1.3/file",body);
+        response.success=json_bool(resp,"success");
+        response.message=json_str(resp,"message");
+        if(!response.success) return {};
+        
+        std::string hex_data = json_str(resp,"contents");
+        if(hex_data.empty()) return {};
+        
+        std::vector<unsigned char> bytes;
+        for (size_t i = 0; i < hex_data.length(); i += 2) {
+            std::string byteString = hex_data.substr(i, 2);
+            unsigned char byte = (unsigned char)strtol(byteString.c_str(), nullptr, 16);
+            bytes.push_back(byte);
+        }
+        return bytes;
+    }
+
 private:
     void _load_user(const std::string& resp){
         auto extract=[&](const std::string& key)->std::string{

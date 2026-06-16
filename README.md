@@ -1,88 +1,71 @@
-# FindexAuth - C++ Example
+# FindexAuth - C++ SDK Example
 
-Welcome to the **FindexAuth C++ SDK Example**. This project demonstrates how to integrate the FindexAuth authentication and licensing platform into any native C++ application (such as game cheats, trainers, or native tools) using an elegant Console UI similar to CloudAuth.
+Welcome! This is the official **FindexAuth C++ Example**. We made this to show you how easily you can add FindexAuth to your native C++ applications or cheats.
 
-FindexAuth provides military-grade security, hardware binding (HWID), and a robust session management system using native Windows APIs, without requiring bulky third-party libraries.
+This SDK is incredibly lightweight and uses Windows native HTTP libraries. No bloated external dependencies like OpenSSL or cURL are required!
 
-## Features
-- **No External Dependencies:** The `findexauth.hpp` header relies purely on native Windows APIs (`WinHTTP`, `Advapi32`). No need to install `libcurl`, `nlohmann/json`, or OpenSSL.
-- **Plug & Play:** Drop `findexauth.hpp` into your Visual Studio project and you're ready to go.
-- **Beautiful Console UI:** Clean ASCII art, colors, and interactive menus out-of-the-box.
-- **Hardware Binding:** Automatically grabs system HWID securely.
-- **Background Heartbeat:** The SDK spins up a native Windows thread to ping the server every 30 seconds, instantly terminating the process (`ExitProcess`) if the user is banned or their subscription expires.
+## 🌟 Features
+- **Zero Dependencies:** Compiles natively using `<winhttp.h>` and Windows standard libraries. Perfect for internal game cheats.
+- **Hidden Server Webhooks:** You can fire Discord webhooks directly from the server. Crackers will never see your Discord URL.
+- **Secure File Delivery:** Download files directly into memory as byte arrays. Never let your secret `.dll` or `.sys` payloads touch the hard drive!
+- **Auto Hardware Binding:** Automatically grabs the user's HWID using their Windows SID token.
+- **Background Heartbeat:** The SDK spins up a background thread to ping the server, automatically exiting the process if the subscription expires or they are banned.
 
-## Project Structure
-```text
-├── Findexauthexample/
-│   ├── findexauth.hpp         <-- The core C++ SDK header. Do not modify.
-│   ├── main.cpp               <-- The interactive Console application.
-│   ├── Findexauthexample.sln  <-- Visual Studio Solution
-│   └── README.md
-```
+## 🚀 How to Setup
 
-## Getting Started
-
-### 1. Configure Your App Credentials
-Open `main.cpp` in Visual Studio and edit the configuration block at the top of the file:
+### 1. Configure Your App
+Open `main.cpp` and look for the `api` setup. Fill in your details from the FindexAuth Dashboard:
 
 ```cpp
-const std::string APP_NAME = "Appliction Name";
-const std::string OWNER_ID = "Your-Owner-ID";
-const std::string APP_SECRET = "Your-App-Secret";
-const std::string APP_VER = "1.0.0";
-const std::string SERVER_URL = "https://findexauth.online";
+std::string name = "Your App Name";
+std::string ownerid = "Your-Owner-ID";
+std::string secret = "Your-App-Secret";
+std::string version = "1.0";
+std::string url = "https://findexauth.online";
+
+FindexAuth::api auth(name, ownerid, secret, version, url);
 ```
 
-### 2. Build the Project
-Open `Findexauthexample.sln` in **Visual Studio 2022** (or 2019).
-1. Select **Release** or **Debug** mode.
-2. Select **x64** (recommended) or **x86**.
-3. Go to `Build -> Build Solution`.
+### 2. Compile
+Open the solution file (`.sln`) in **Visual Studio**. Ensure you compile in `x64` or `x86` depending on your needs. It should build instantly.
 
-### 3. Integration Guide
-To add this to your own project, just copy `findexauth.hpp`, include it, and link against `winhttp.lib` (which is done automatically via `#pragma comment` in the header).
+## 💻 Code Examples
 
+Here are some examples of what FindexAuth can do for you:
+
+### Setup & Login
 ```cpp
-#include "findexauth.hpp"
+auth.init();
 
-int main() {
-    FindexAuth::api auth("MyApp", "OwnerID", "AppSecret", "1.0", "https://findexauth.online");
-    auth.init();
-
+if (auth.response.success) {
+    auth.login("username", "password");
     if (auth.response.success) {
-        auth.login("username", "password");
+        std::cout << "Welcome, " << auth.user_data.username << "!\n";
         
-        if (auth.response.success) {
-            std::cout << "Welcome " << auth.user_data.username << "!\n";
-            auth.start_heartbeat(30);
-            
-            // Your protected code here
-        }
+        // Start heartbeat protection
+        auth.start_heartbeat(30);
     }
 }
 ```
 
-## Migrating from KeyAuth
-If you are migrating an existing project from KeyAuth, switching to FindexAuth is seamless and takes only a few minutes.
+### Server-Sided Webhooks
+Keep your webhook URLs hidden on the server!
+```cpp
+// '123' is your Webhook ID from the dashboard
+auth.webhook("123", "User injected the cheat successfully!");
+```
 
-1. **Remove KeyAuth:** Delete `keyauth.hpp` and any KeyAuth library files (`libcurl.lib`, etc.) from your project.
-2. **Add FindexAuth:** Drop `findexauth.hpp` into your project and `#include "findexauth.hpp"`.
-3. **Update Initialization:**
-   Change your old KeyAuth initialization to FindexAuth:
-   ```cpp
-   FindexAuth::api auth("MyApp", "OwnerID", "AppSecret", "1.0", "https://findexauth.online");
-   auth.init();
-   ```
-4. **Update API Calls:** The function names are nearly identical:
-   - `KeyAuthApp.login(user, pass)` ➔ `auth.login(user, pass)`
-   - `KeyAuthApp.register(user, pass, key)` ➔ `auth.register_key(key, user, pass)`
-   - `KeyAuthApp.license(key)` ➔ `auth.license(key)`
-   - `KeyAuthApp.check()` ➔ `auth.start_heartbeat(30)` (Runs continuously in the background!)
-5. **Remove Dependencies:** Unlike KeyAuth, FindexAuth relies entirely on native Windows APIs (`WinHTTP`). You can safely remove all the bulky `libcurl`, `openssl`, and `nlohmann/json` dependencies from your project!
+### Secure File Download
+Download payloads safely without writing to disk.
+```cpp
+// '5' is your File ID from the dashboard
+std::vector<unsigned char> file_bytes = auth.download_file("5");
 
-## Troubleshooting
-- **Failed to connect (WinHTTP open failed):** Ensure your internet connection is active.
-- **Linker Errors (LNK2019):** Make sure your project links against `winhttp.lib` and `Advapi32.lib`. The provided `findexauth.hpp` handles this automatically for MSVC.
+if (!file_bytes.empty()) {
+    // You can now manually map (inject) these bytes straight into memory!
+    std::cout << "Payload downloaded securely to memory.\n";
+}
+```
 
 ---
-*Built with ❤️ for FindexAuth.*
+*Built with ❤️ by FindexAuth.*
